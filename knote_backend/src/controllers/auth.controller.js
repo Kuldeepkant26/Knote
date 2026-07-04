@@ -23,10 +23,24 @@ function clearRefreshCookie(res) {
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
-  const { user, accessToken, refreshToken } = await authService.registerUser({ name, email, password });
+  const { email: pendingEmail } = await authService.registerUser({ name, email, password });
+
+  sendSuccess(res, 200, "We've sent a verification code to your email", { email: pendingEmail });
+});
+
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+  const { user, accessToken, refreshToken } = await authService.verifyOtp({ email, otp });
 
   setRefreshCookie(res, refreshToken);
-  sendSuccess(res, 201, "Account created successfully", { user, accessToken });
+  sendSuccess(res, 201, "Account verified successfully", { user, accessToken });
+});
+
+const resendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  await authService.resendOtp(email);
+
+  sendSuccess(res, 200, "A new verification code has been sent to your email");
 });
 
 const login = asyncHandler(async (req, res) => {
@@ -79,6 +93,8 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 module.exports = {
   register,
+  verifyOtp,
+  resendOtp,
   login,
   refresh,
   logout,

@@ -39,8 +39,8 @@ export default function Signup() {
 
     setSubmitting(true);
     try {
-      await signup({ name: form.name, email: form.email, password: form.password });
-      navigate("/dashboard", { replace: true });
+      const email = await signup({ name: form.name, email: form.email, password: form.password });
+      navigate("/verify-email", { replace: true, state: { email } });
     } catch (err) {
       setErrors(toFormErrors(err));
     } finally {

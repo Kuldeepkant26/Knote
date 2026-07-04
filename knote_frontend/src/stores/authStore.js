@@ -24,11 +24,21 @@ export const useAuthStore = create((set, get) => ({
     return data.user;
   },
 
+  // Starts the signup flow: backend emails an OTP and returns no auth data.
+  // The account isn't created (and the user isn't logged in) until verifyOtp.
   signup: async ({ name, email, password }) => {
-    // Backend auto-logs-in on register (returns user + accessToken).
     const data = await authApi.register({ name, email, password });
+    return data.email;
+  },
+
+  verifyOtp: async ({ email, otp }) => {
+    const data = await authApi.verifyOtp({ email, otp });
     get().setAuth(data);
     return data.user;
+  },
+
+  resendOtp: async (email) => {
+    await authApi.resendOtp({ email });
   },
 
   fetchMe: async () => {

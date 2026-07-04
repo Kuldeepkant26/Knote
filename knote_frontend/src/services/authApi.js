@@ -3,7 +3,9 @@ import { api } from "@/lib/apiClient";
 // Semantic wrappers over the API client so stores/screens never hardcode paths.
 // Each returns the `data` object from the backend's success envelope.
 export const authApi = {
-  register: (payload) => api.post("/auth/register", payload), // { user, accessToken }
+  register: (payload) => api.post("/auth/register", payload), // { email }
+  verifyOtp: (payload) => api.post("/auth/verify-otp", payload), // { user, accessToken }
+  resendOtp: (payload) => api.post("/auth/resend-otp", payload),
   login: (payload) => api.post("/auth/login", payload), // { user, accessToken }
   refresh: () => api.post("/auth/refresh"), // { user, accessToken }
   logout: () => api.post("/auth/logout"),

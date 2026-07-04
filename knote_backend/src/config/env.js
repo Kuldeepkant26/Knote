@@ -2,8 +2,8 @@ const requiredEnvVars = [
   "MONGO_URL",
   "JWT_ACCESS_SECRET",
   "JWT_REFRESH_SECRET",
-  "EMAIL_USER",
-  "EMAIL_PASS",
+  "BREVO_API_KEY",
+  "EMAIL_FROM",
 ];
 
 function validateEnv() {
@@ -25,10 +25,11 @@ const env = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "30d",
   },
   resetTokenExpiresMin: Number(process.env.RESET_TOKEN_EXPIRES_MIN) || 15,
+  otpExpiresMin: Number(process.env.OTP_EXPIRES_MIN) || 10,
   email: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+    brevoApiKey: process.env.BREVO_API_KEY,
+    from: process.env.EMAIL_FROM,
+    fromName: process.env.EMAIL_FROM_NAME || "Knote",
   },
 };
 

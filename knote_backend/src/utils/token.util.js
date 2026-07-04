@@ -30,6 +30,11 @@ function hashToken(rawToken) {
   return crypto.createHash("sha256").update(rawToken).digest("hex");
 }
 
+// 6-digit numeric code, e.g. "042817" (zero-padded, so always exactly 6 digits).
+function generateOtp() {
+  return crypto.randomInt(0, 1_000_000).toString().padStart(6, "0");
+}
+
 module.exports = {
   signAccessToken,
   signRefreshToken,
@@ -37,4 +42,5 @@ module.exports = {
   verifyRefreshToken,
   generateRawToken,
   hashToken,
+  generateOtp,
 };

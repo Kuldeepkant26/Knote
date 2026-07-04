@@ -2,9 +2,11 @@ const express = require("express");
 const authController = require("../controllers/auth.controller");
 const validate = require("../middlewares/validate.middleware");
 const { protect } = require("../middlewares/auth.middleware");
-const { authLimiter } = require("../middlewares/rateLimiter.middleware");
+const { authLimiter, otpResendLimiter } = require("../middlewares/rateLimiter.middleware");
 const {
   registerValidator,
+  verifyOtpValidator,
+  resendOtpValidator,
   loginValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
@@ -13,6 +15,8 @@ const {
 const router = express.Router();
 
 router.post("/register", authLimiter, registerValidator, validate, authController.register);
+router.post("/verify-otp", authLimiter, verifyOtpValidator, validate, authController.verifyOtp);
+router.post("/resend-otp", otpResendLimiter, resendOtpValidator, validate, authController.resendOtp);
 router.post("/login", authLimiter, loginValidator, validate, authController.login);
 router.post("/refresh", authController.refresh);
 router.post("/logout", protect, authController.logout);

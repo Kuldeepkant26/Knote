@@ -1,4 +1,5 @@
 const User = require("../models/user.model");
+const PendingSignup = require("../models/pendingSignup.model");
 const { ApiError } = require("../utils/apiResponse");
 const {
   signAccessToken,
@@ -6,20 +7,96 @@ const {
   verifyRefreshToken,
   generateRawToken,
   hashToken,
+  generateOtp,
 } = require("../utils/token.util");
-const { sendPasswordResetEmail } = require("./email.service");
+const { sendPasswordResetEmail, sendOtpEmail } = require("./email.service");
 const { env } = require("../config/env");
 
 const MAX_REFRESH_TOKENS_PER_USER = 5;
 
+// Starts (or restarts) the signup flow: stores the details in a short-lived
+// PendingSignup and emails an OTP. The real User is only created once the
+// OTP is verified — no unverified accounts ever exist in the User collection.
 async function registerUser({ name, email, password }) {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new ApiError(409, "An account with this email already exists");
   }
 
-  const user = await User.create({ name, email, password });
+  const otp = generateOtp();
+  const otpHash = hashToken(otp);
+  const otpExpires = new Date(Date.now() + env.otpExpiresMin * 60 * 1000);
+
+  // Re-submitting signup for an email that's already pending restarts the
+  // process with a fresh OTP and the latest details, rather than blocking.
+  let pending = await PendingSignup.findOne({ email });
+  if (pending) {
+    pending.name = name;
+    pending.password = password; // re-triggers the pre-save hash hook
+    pending.otpHash = otpHash;
+    pending.otpExpires = otpExpires;
+  } else {
+    pending = new PendingSignup({ name, email, password, otpHash, otpExpires });
+  }
+  await pending.save();
+
+  try {
+    await sendOtpEmail(email, otp);
+  } catch (err) {
+    // Don't leave a pending signup around whose OTP nobody received.
+    await PendingSignup.deleteOne({ _id: pending._id });
+    throw new ApiError(500, "Failed to send verification email. Please try again later.");
+  }
+
+  return { email };
+}
+
+async function verifyOtp({ email, otp }) {
+  const pending = await PendingSignup.findOne({ email }).select("+password +otpHash +otpExpires");
+  if (!pending) {
+    throw new ApiError(400, "No pending signup found for this email. Please sign up again.");
+  }
+
+  if (pending.otpExpires.getTime() < Date.now()) {
+    await PendingSignup.deleteOne({ _id: pending._id });
+    throw new ApiError(400, "This code has expired. Please sign up again to get a new one.");
+  }
+
+  if (hashToken(otp) !== pending.otpHash) {
+    throw new ApiError(400, "Invalid verification code");
+  }
+
+  const existingUser = await User.findOne({ email: pending.email });
+  if (existingUser) {
+    await PendingSignup.deleteOne({ _id: pending._id });
+    throw new ApiError(409, "An account with this email already exists");
+  }
+
+  const user = new User({ name: pending.name, email: pending.email, password: pending.password });
+  user.$locals.skipPasswordHash = true; // pending.password is already a bcrypt hash
+  await user.save();
+
+  await PendingSignup.deleteOne({ _id: pending._id });
+
   return issueTokens(user);
+}
+
+async function resendOtp(email) {
+  const pending = await PendingSignup.findOne({ email });
+  if (!pending) {
+    throw new ApiError(400, "No pending signup found for this email. Please sign up again.");
+  }
+
+  const otp = generateOtp();
+  pending.otpHash = hashToken(otp);
+  pending.otpExpires = new Date(Date.now() + env.otpExpiresMin * 60 * 1000);
+  await pending.save();
+
+  try {
+    await sendOtpEmail(email, otp);
+  } catch (err) {
+    throw new ApiError(500, "Failed to send verification email. Please try again later.");
+  }
 }
 
 async function loginUser({ email, password }) {
@@ -123,6 +200,8 @@ async function resetPassword(rawToken, newPassword) {
 
 module.exports = {
   registerUser,
+  verifyOtp,
+  resendOtp,
   loginUser,
   refreshTokens,
   logoutUser,

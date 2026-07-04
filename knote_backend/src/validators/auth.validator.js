@@ -17,6 +17,15 @@ const registerValidator = [
     .withMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number"),
 ];
 
+const verifyOtpValidator = [
+  body("email").trim().notEmpty().withMessage("Email is required").isEmail().withMessage("Enter a valid email address").normalizeEmail(),
+  body("otp").trim().notEmpty().withMessage("Verification code is required").isLength({ min: 6, max: 6 }).withMessage("Enter the 6-digit code").isNumeric().withMessage("Code must be numeric"),
+];
+
+const resendOtpValidator = [
+  body("email").trim().notEmpty().withMessage("Email is required").isEmail().withMessage("Enter a valid email address").normalizeEmail(),
+];
+
 const loginValidator = [
   body("email").trim().notEmpty().withMessage("Email is required").isEmail().withMessage("Enter a valid email address").normalizeEmail(),
   body("password").notEmpty().withMessage("Password is required"),
@@ -39,6 +48,8 @@ const resetPasswordValidator = [
 
 module.exports = {
   registerValidator,
+  verifyOtpValidator,
+  resendOtpValidator,
   loginValidator,
   forgotPasswordValidator,
   resetPasswordValidator,

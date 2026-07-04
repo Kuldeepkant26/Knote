@@ -1,21 +1,27 @@
-const nodemailer = require("nodemailer");
 const { env } = require("../config/env");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: env.email.user,
-    pass: env.email.pass,
-  },
-});
+const BREVO_SEND_URL = "https://api.brevo.com/v3/smtp/email";
 
 async function sendEmail({ to, subject, html }) {
-  await transporter.sendMail({
-    from: env.email.from,
-    to,
-    subject,
-    html,
+  const res = await fetch(BREVO_SEND_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "api-key": env.email.brevoApiKey,
+    },
+    body: JSON.stringify({
+      sender: { email: env.email.from, name: env.email.fromName },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
   });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Brevo email send failed (${res.status}): ${body}`);
+  }
 }
 
 async function sendPasswordResetEmail(to, resetUrl) {
@@ -38,4 +44,23 @@ async function sendPasswordResetEmail(to, resetUrl) {
   });
 }
 
-module.exports = { sendEmail, sendPasswordResetEmail };
+async function sendOtpEmail(to, otp) {
+  await sendEmail({
+    to,
+    subject: "Verify your Knote account",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2>Verify your email</h2>
+        <p>Use this code to finish creating your Knote account. It expires in ${env.otpExpiresMin} minutes.</p>
+        <p style="text-align:center; margin: 24px 0;">
+          <span style="display:inline-block; padding:14px 28px; background:#f4f4f5; border-radius:8px; font-size:28px; font-weight:700; letter-spacing:8px;">
+            ${otp}
+          </span>
+        </p>
+        <p>If you didn't request this, you can safely ignore this email.</p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendEmail, sendPasswordResetEmail, sendOtpEmail };
