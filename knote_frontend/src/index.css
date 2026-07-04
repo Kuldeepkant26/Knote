@@ -1,0 +1,400 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/*  KNOTE design system — soft / premium / minimal                     */
+/*  Lavender-mauve accent over warm cream. Tokens are the single       */
+/*  source of truth; utilities like bg-cream-50 / text-mauve-700 /     */
+/*  bg-accent-500 are generated from these.                            */
+/* ------------------------------------------------------------------ */
+@theme {
+  /* Fonts */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-hand: "Kalam", "Comic Sans MS", cursive;
+
+  /* Warm cream backgrounds */
+  --color-cream-50: #fbf8f4;
+  --color-cream-100: #f6f1ea;
+  --color-cream-200: #efe7db;
+
+  /* Card surface */
+  --color-surface: #ffffff;
+
+  /* Mauve neutrals (text, borders, tints) */
+  --color-mauve-50: #f4eff6;
+  --color-mauve-100: #e8dfec;
+  --color-mauve-200: #d7c9dd;
+  --color-mauve-300: #c2aecb;
+  --color-mauve-400: #a891b0;
+  --color-mauve-500: #8a7292;
+  --color-mauve-600: #6e5875;
+  --color-mauve-700: #52415a;
+  --color-mauve-800: #3b2e40;
+
+  /* Lavender / purple accent */
+  --color-accent-50: #f3e9ff;
+  --color-accent-100: #e9d7ff;
+  --color-accent-200: #d9b8ff;
+  --color-accent-300: #c491ff;
+  --color-accent-400: #b566ff;
+  --color-accent-500: #aa3bff;
+  --color-accent-600: #8e28e0;
+  --color-accent-700: #7420b8;
+
+  /* Ink (max contrast) */
+  --color-ink-900: #241b29;
+
+  /* Semantic */
+  --color-success-50: #e9f8f1;
+  --color-success-500: #3fb984;
+  --color-success-600: #2f9d6e;
+  --color-danger-50: #fdecec;
+  --color-danger-500: #e5484d;
+  --color-danger-600: #c93a3f;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  /* Soft, mauve-tinted shadows (not black) */
+  --shadow-soft: 0 2px 8px -2px rgb(110 88 117 / 0.08);
+  --shadow-card: 0 8px 30px -6px rgb(110 88 117 / 0.12);
+  --shadow-pop: 0 16px 48px -12px rgb(110 88 117 / 0.2);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-cream-50 text-mauve-800 font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-accent-100 text-accent-700;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface rounded-2xl shadow-card;
+  }
+
+  .field-label {
+    @apply block text-sm font-medium text-mauve-600 mb-1.5;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-mauve-100 bg-surface px-4 py-2.5 text-mauve-800
+      placeholder:text-mauve-400 transition
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-200
+      focus-visible:border-accent-200;
+  }
+
+  .input-error {
+    @apply border-danger-500 bg-danger-50/40
+      focus-visible:ring-danger-500/30 focus-visible:border-danger-500;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 py-2.5
+      font-medium text-white shadow-soft transition
+      hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2
+      focus-visible:ring-accent-200 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50
+      disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium
+      text-mauve-600 transition hover:bg-mauve-50 hover:text-mauve-800
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-200;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Notebook paper + TipTap editor                                     */
+/*  Ruling height (32px) is kept in sync with the editor line-height   */
+/*  so handwriting sits on the lines like a real notebook.             */
+/* ------------------------------------------------------------------ */
+:root {
+  --paper-line: 32px;
+  --paper-margin: 56px; /* red left margin position */
+  --paper-cream: #fbf8f4;
+  --paper-white: #ffffff;
+  --paper-rule: rgba(110, 88, 117, 0.18);
+  --paper-margin-color: rgba(229, 72, 77, 0.45);
+  --paper-dot: rgba(110, 88, 117, 0.22);
+  /* Distance from the top of a text line-box down to where handwriting
+     should rest on the rule beneath it. Tuned for the handwriting fonts'
+     metrics (bigger descenders than Inter) so letters sit ON the line
+     instead of hanging from the line above or being cut by the one below. */
+  --paper-rule-baseline: 26px;
+  /* Top padding must land the FIRST text line's baseline on the FIRST rule. */
+  --paper-top-pad: calc(var(--paper-line) - var(--paper-rule-baseline));
+}
+
+.paper {
+  background-color: var(--paper-cream);
+  background-attachment: local;
+}
+
+/* Ruled: horizontal rules + a red vertical margin line.
+   The ruling repeat is phase-shifted by --paper-top-pad so a rule always
+   lines up with --paper-top-pad + var(--paper-line) — i.e. exactly where
+   the first text line's baseline sits (see .tiptap padding-top below). */
+.paper-ruled-cream,
+.paper-ruled-white {
+  background-image:
+    linear-gradient(90deg, transparent var(--paper-margin), var(--paper-margin-color) var(--paper-margin), var(--paper-margin-color) calc(var(--paper-margin) + 1.5px), transparent calc(var(--paper-margin) + 1.5px)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--paper-line) - 1px), var(--paper-rule) calc(var(--paper-line) - 1px), var(--paper-rule) var(--paper-line));
+  background-position: 0 0, 0 var(--paper-top-pad);
+  background-attachment: local;
+}
+.paper-ruled-cream {
+  background-color: var(--paper-cream);
+}
+.paper-ruled-white {
+  background-color: var(--paper-white);
+}
+
+/* Grid */
+.paper-grid {
+  background-color: var(--paper-cream);
+  background-image:
+    repeating-linear-gradient(to right, transparent 0, transparent calc(var(--paper-line) - 1px), var(--paper-rule) calc(var(--paper-line) - 1px), var(--paper-rule) var(--paper-line)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--paper-line) - 1px), var(--paper-rule) calc(var(--paper-line) - 1px), var(--paper-rule) var(--paper-line));
+  background-position: 0 0, 0 var(--paper-top-pad);
+  background-attachment: local;
+}
+
+/* Dotted */
+.paper-dotted {
+  background-color: var(--paper-cream);
+  background-image: radial-gradient(var(--paper-dot) 1.5px, transparent 1.5px);
+  background-size: var(--paper-line) var(--paper-line);
+  background-position: 0 var(--paper-top-pad);
+  background-attachment: local;
+}
+
+/* Plain */
+.paper-plain-cream {
+  background-color: var(--paper-cream);
+}
+.paper-plain-white {
+  background-color: var(--paper-white);
+}
+
+/* TipTap / ProseMirror content */
+.tiptap {
+  outline: none;
+  font-family: var(--font-hand);
+  color: #3b2e40;
+  font-size: 19px;
+  line-height: var(--paper-line);
+  padding: var(--paper-top-pad) 40px calc(var(--paper-line) * 2) calc(var(--paper-margin) + 20px);
+  min-height: 100%;
+}
+
+.tiptap p,
+.tiptap li {
+  line-height: var(--paper-line);
+  margin: 0;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  color: #241b29;
+  line-height: var(--paper-line);
+  margin: 0;
+}
+.tiptap h1 { font-size: 30px; line-height: calc(var(--paper-line) * 1.5); }
+.tiptap h2 { font-size: 25px; line-height: calc(var(--paper-line) * 1.25); }
+.tiptap h3 { font-size: 21px; }
+
+/* Highlight as a rounded warm pill (like the screenshot's headings) */
+.tiptap mark {
+  background-color: #fde68a;
+  padding: 0.05em 0.3em;
+  border-radius: 0.4em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.tiptap a {
+  color: var(--color-accent-600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5em;
+  margin: 0;
+}
+.tiptap ul { list-style: disc; }
+.tiptap ol { list-style: decimal; }
+
+/* Task lists */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.25em;
+}
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+.tiptap ul[data-type="taskList"] li > label {
+  margin-top: 0.35em;
+  user-select: none;
+}
+.tiptap ul[data-type="taskList"] input[type="checkbox"] {
+  width: 1.05em;
+  height: 1.05em;
+  accent-color: var(--color-accent-500);
+  cursor: pointer;
+}
+
+/* Code block: a soft typed card on the paper */
+.tiptap pre {
+  font-family: "Courier New", ui-monospace, monospace;
+  background: rgba(59, 46, 64, 0.05);
+  border: 1px solid var(--color-mauve-100);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 8px 0;
+  line-height: 1.5;
+  font-size: 14px;
+  color: #3b2e40;
+  overflow-x: auto;
+}
+.tiptap pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+.tiptap code {
+  font-family: "Courier New", ui-monospace, monospace;
+  background: rgba(59, 46, 64, 0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid var(--color-accent-300);
+  background: var(--color-accent-50);
+  border-radius: 0 10px 10px 0;
+  padding: 6px 14px;
+  margin: 8px 0;
+  color: var(--color-mauve-700);
+}
+
+/* Placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-mauve-400);
+  pointer-events: none;
+  height: 0;
+}
+
+/* Excalidraw node wrapper inside the page flow */
+.tiptap .excalidraw-node {
+  margin: 12px 0;
+}
+
+/* Hover tooltip chips — add class "tt" + a data-tip attribute */
+.tt {
+  position: relative;
+}
+.tt::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 50;
+  white-space: nowrap;
+  border-radius: 8px;
+  background: var(--color-mauve-800);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s;
+  pointer-events: none;
+}
+.tt:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0.35s; /* don't flash while sweeping the cursor across */
+}
+/* Right-aligned variant for buttons near the container's right edge */
+.tt-end::after {
+  left: auto;
+  right: 0;
+  translate: 0 0;
+}
+
+/* Tables: a clean typed grid dropped onto the paper */
+.tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 10px 0;
+  overflow: hidden;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.tiptap th,
+.tiptap td {
+  position: relative;
+  border: 1px solid var(--color-mauve-200);
+  padding: 8px 10px;
+  vertical-align: top;
+  min-width: 1em;
+  background: rgba(255, 255, 255, 0.55);
+}
+.tiptap th {
+  background: var(--color-mauve-50);
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-mauve-700);
+}
+.tiptap td > *,
+.tiptap th > * {
+  margin: 0;
+}
+.tiptap .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(170, 59, 255, 0.12);
+  pointer-events: none;
+}
+.tiptap .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: var(--color-accent-400);
+  pointer-events: none;
+}
+.tiptap.resize-cursor {
+  cursor: col-resize;
+}
