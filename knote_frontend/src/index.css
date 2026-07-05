@@ -13,9 +13,9 @@
   --font-hand: "Kalam", "Comic Sans MS", cursive;
 
   /* Warm cream backgrounds */
-  --color-cream-50: #fbf8f4;
-  --color-cream-100: #f6f1ea;
-  --color-cream-200: #efe7db;
+  --color-cream-50: #faf6f1;
+  --color-cream-100: #f5efe9;
+  --color-cream-200: #ece3d8;
 
   /* Card surface */
   --color-surface: #ffffff;
@@ -31,15 +31,15 @@
   --color-mauve-700: #52415a;
   --color-mauve-800: #3b2e40;
 
-  /* Lavender / purple accent */
-  --color-accent-50: #f3e9ff;
-  --color-accent-100: #e9d7ff;
-  --color-accent-200: #d9b8ff;
-  --color-accent-300: #c491ff;
-  --color-accent-400: #b566ff;
-  --color-accent-500: #aa3bff;
-  --color-accent-600: #8e28e0;
-  --color-accent-700: #7420b8;
+  /* Dusty lavender / premium purple accent */
+  --color-accent-50: #f7f3f9;
+  --color-accent-100: #ece3f0;
+  --color-accent-200: #dccbe4;
+  --color-accent-300: #c4aed1;
+  --color-accent-400: #ab8fbc;
+  --color-accent-500: #9678a8;
+  --color-accent-600: #7c6190;
+  --color-accent-700: #634d75;
 
   /* Ink (max contrast) */
   --color-ink-900: #241b29;
@@ -63,6 +63,54 @@
   --shadow-soft: 0 2px 8px -2px rgb(110 88 117 / 0.08);
   --shadow-card: 0 8px 30px -6px rgb(110 88 117 / 0.12);
   --shadow-pop: 0 16px 48px -12px rgb(110 88 117 / 0.2);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ */
+/*  Dark theme — token flip. Utilities compile to var(--color-*), so    */
+/*  redefining the tokens under .dark re-themes every existing class.   */
+/*  The notebook paper is content (like real paper) and does NOT flip.  */
+/* ------------------------------------------------------------------ */
+.dark {
+  color-scheme: dark;
+
+  /* App backgrounds: deep plum darks */
+  --color-cream-50: #17141d;
+  --color-cream-100: #1d1926;
+  --color-cream-200: #272231;
+
+  --color-surface: #211c2b;
+
+  /* Mauve neutrals, inverted (50 = darkest tint, 800 = primary text) */
+  --color-mauve-50: #2b2437;
+  --color-mauve-100: #352d43;
+  --color-mauve-200: #463b57;
+  --color-mauve-300: #5c4f70;
+  --color-mauve-400: #8f819f;
+  --color-mauve-500: #a89bb7;
+  --color-mauve-600: #c3b7d0;
+  --color-mauve-700: #dcd2e5;
+  --color-mauve-800: #efe9f5;
+
+  --color-ink-900: #f7f3fa;
+
+  /* Accent: tint backgrounds go dark, accent text lightens */
+  --color-accent-50: #2f2540;
+  --color-accent-100: #3b2e4e;
+  --color-accent-200: #4f3f66;
+  --color-accent-300: #7c6194;
+  --color-accent-400: #a488b8;
+  --color-accent-500: #9678a8;
+  --color-accent-600: #c0a8d2;
+  --color-accent-700: #d6c4e3;
+
+  --color-success-50: #14291f;
+  --color-danger-50: #351b1d;
+
+  --shadow-soft: 0 2px 8px -2px rgb(0 0 0 / 0.4);
+  --shadow-card: 0 8px 30px -6px rgb(0 0 0 / 0.5);
+  --shadow-pop: 0 16px 48px -12px rgb(0 0 0 / 0.65);
 }
 
 @layer base {
@@ -105,7 +153,7 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-500 px-4 py-2.5
       font-medium text-white shadow-soft transition
-      hover:bg-accent-600 focus-visible:outline-none focus-visible:ring-2
+      hover:bg-accent-600 dark:hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2
       focus-visible:ring-accent-200 focus-visible:ring-offset-2 focus-visible:ring-offset-cream-50
       disabled:opacity-60 disabled:cursor-not-allowed;
   }
@@ -114,6 +162,34 @@
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium
       text-mauve-600 transition hover:bg-mauve-50 hover:text-mauve-800
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-200;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-mauve-100/70;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-surface) 60%, transparent),
+      transparent
+    );
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
   }
 }
 
@@ -188,6 +264,70 @@
 }
 .paper-plain-white {
   background-color: var(--paper-white);
+}
+
+/* Midnight papers: same recipes as ruled/dotted with dark-tuned vars.
+   These are per-paper overrides, independent of the app's dark theme. */
+.paper-ruled-midnight,
+.paper-dotted-midnight {
+  --paper-rule: rgba(196, 174, 209, 0.2);
+  --paper-margin-color: rgba(255, 138, 143, 0.45);
+  --paper-dot: rgba(196, 174, 209, 0.28);
+  background-color: #211e2e;
+}
+.paper-ruled-midnight {
+  background-image:
+    linear-gradient(90deg, transparent var(--paper-margin), var(--paper-margin-color) var(--paper-margin), var(--paper-margin-color) calc(var(--paper-margin) + 1.5px), transparent calc(var(--paper-margin) + 1.5px)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--paper-line) - 1px), var(--paper-rule) calc(var(--paper-line) - 1px), var(--paper-rule) var(--paper-line));
+  background-position: 0 0, 0 var(--paper-top-pad);
+  background-attachment: local;
+}
+.paper-dotted-midnight {
+  background-image: radial-gradient(var(--paper-dot) 1.5px, transparent 1.5px);
+  background-size: var(--paper-line) var(--paper-line);
+  background-position: 0 var(--paper-top-pad);
+  background-attachment: local;
+}
+
+/* Plain dark papers (glowy ink comes from the shared paper-dark class) */
+.paper-plain-midnight {
+  background-color: #211e2e;
+}
+.paper-plain-charcoal {
+  background-color: #1a1a20;
+}
+.paper-plain-slate {
+  background-color: #1d2430;
+}
+
+/* Sand: warm tan base + fractal-noise grain (inline SVG, no assets) */
+.paper-sand {
+  background-color: #ead9bd;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.34 0 0 0 0 0.22 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Linen: cream base + crossed hairline weave */
+.paper-linen {
+  background-color: #f6f0e6;
+  background-image:
+    repeating-linear-gradient(to right, rgba(110, 88, 117, 0.035) 0, rgba(110, 88, 117, 0.035) 1px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(to bottom, rgba(110, 88, 117, 0.035) 0, rgba(110, 88, 117, 0.035) 1px, transparent 1px, transparent 3px);
+}
+
+/* Miniature paper previews in the background picker: shrink the pattern
+   variables so a 48px swatch shows the whole design instead of a zoomed
+   crop of the full-size ruling. */
+.paper-swatch {
+  --paper-line: 9px;
+  --paper-margin: 12px;
+  --paper-rule-baseline: 7px;
+}
+.paper-swatch.paper-dotted,
+.paper-swatch.paper-dotted-midnight {
+  background-image: radial-gradient(var(--paper-dot) 1px, transparent 1px);
+}
+.paper-swatch.paper-sand {
+  background-size: 60px 60px;
 }
 
 /* TipTap / ProseMirror content */
@@ -309,6 +449,56 @@
   height: 0;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Dark papers: light default ink + a neon halo. The glow uses         */
+/*  currentColor so user-picked ink colors glow in their own hue.       */
+/* ------------------------------------------------------------------ */
+.paper-dark .tiptap {
+  color: #ece6f4;
+  text-shadow:
+    0 0 1px color-mix(in srgb, currentColor 60%, transparent),
+    0 0 10px color-mix(in srgb, currentColor 45%, transparent);
+}
+.paper-dark .tiptap h1,
+.paper-dark .tiptap h2,
+.paper-dark .tiptap h3 {
+  color: #f6f1fa;
+}
+.paper-dark .tiptap p.is-editor-empty:first-child::before {
+  color: rgba(236, 230, 244, 0.35);
+}
+.paper-dark .tiptap pre {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #ece6f4;
+  text-shadow: none;
+}
+.paper-dark .tiptap code {
+  background: rgba(255, 255, 255, 0.08);
+}
+.paper-dark .tiptap th,
+.paper-dark .tiptap td {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.paper-dark .tiptap th {
+  color: #dcd2e5;
+}
+.paper-dark .tiptap blockquote {
+  background: rgba(196, 174, 209, 0.1);
+  border-left-color: rgba(196, 174, 209, 0.5);
+  color: #dcd2e5;
+}
+.paper-dark .tiptap mark {
+  text-shadow: none;
+  color: #241b29;
+}
+
+/* In the dark app theme the paper's shadow disappears — give it a hairline. */
+.dark .paper {
+  outline: 1px solid var(--color-mauve-100);
+}
+
 /* Excalidraw node wrapper inside the page flow */
 .tiptap .excalidraw-node {
   margin: 12px 0;
@@ -328,7 +518,7 @@
   white-space: nowrap;
   border-radius: 8px;
   background: var(--color-mauve-800);
-  color: #fff;
+  color: var(--color-cream-50);
   font-size: 11px;
   font-weight: 500;
   padding: 4px 8px;
@@ -383,7 +573,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(170, 59, 255, 0.12);
+  background: rgba(150, 120, 168, 0.16);
   pointer-events: none;
 }
 .tiptap .column-resize-handle {

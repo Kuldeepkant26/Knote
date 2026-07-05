@@ -4,6 +4,7 @@ import { NotebookPen, FileText, ListChecks, Flame, ArrowRight, FileClock, Plus }
 import StatCard from "@/components/dashboard/StatCard";
 import SectionHeader from "@/components/dashboard/SectionHeader";
 import NotebookCard from "@/components/dashboard/NotebookCard";
+import { NotebookCardSkeleton } from "@/components/dashboard/PageSkeletons";
 import Card from "@/components/dashboard/Card";
 import EmptyState from "@/components/dashboard/EmptyState";
 import { useNotebooksStore } from "@/stores/notebooksStore";
@@ -54,7 +55,17 @@ export default function DashboardHome() {
               </Link>
             }
           />
-          {notebooks.length === 0 ? (
+          {!listLoaded ? (
+            <div
+              className="grid grid-cols-1 gap-5 sm:grid-cols-2"
+              role="status"
+              aria-label="Loading notebooks"
+            >
+              {Array.from({ length: 4 }, (_, i) => (
+                <NotebookCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : notebooks.length === 0 ? (
             <EmptyState
               icon={NotebookPen}
               title="No notebooks yet"

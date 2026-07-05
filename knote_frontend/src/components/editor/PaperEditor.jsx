@@ -27,7 +27,7 @@ const extensions = [
 // Autosave debounce window.
 const AUTOSAVE_MS = 800;
 
-export default function PaperEditor({ initialContent, background, font, onSave, onEditorReady }) {
+export default function PaperEditor({ initialContent, background, font, editable = true, onSave, onEditorReady }) {
   const timerRef = useRef(null);
   const latestJsonRef = useRef(null);
   const onSaveRef = useRef(onSave);
@@ -58,6 +58,10 @@ export default function PaperEditor({ initialContent, background, font, onSave, 
   useEffect(() => {
     if (editor) onEditorReady?.(editor);
   }, [editor, onEditorReady]);
+
+  useEffect(() => {
+    editor?.setEditable(editable);
+  }, [editor, editable]);
 
   // Flush any pending save on unmount (StrictMode-safe: only fires if a debounce is pending).
   useEffect(() => {

@@ -8,13 +8,13 @@ export const FONTS = [
   { label: "Typed", value: "Inter" },
 ];
 
-export const FONT_SIZES = ["16px", "19px", "22px", "26px", "32px"];
+export const FONT_SIZES = ["13px", "14px", "16px", "19px", "22px", "26px", "32px", "40px", "48px"];
 
 // Ink palette (handwriting colors), incl. the screenshot's ink-blue.
 export const INK_COLORS = [
   { label: "Ink blue", value: "#1e3a8a" },
   { label: "Charcoal", value: "#3b2e40" },
-  { label: "Plum", value: "#7420b8" },
+  { label: "Plum", value: "#654e76" },
   { label: "Crimson", value: "#c93a3f" },
   { label: "Forest", value: "#2f9d6e" },
   { label: "Rust", value: "#b45309" },
@@ -38,6 +38,14 @@ export const BACKGROUNDS = [
   { key: "dotted", label: "Dotted", className: "paper-dotted" },
   { key: "plain-cream", label: "Plain Cream", className: "paper-plain-cream" },
   { key: "plain-white", label: "Plain White", className: "paper-plain-white" },
+  // Dark papers: "paper-dark" switches the ink to a light glow (see index.css).
+  { key: "ruled-midnight", label: "Ruled Midnight", className: "paper-ruled-midnight paper-dark" },
+  { key: "dotted-midnight", label: "Dotted Midnight", className: "paper-dotted-midnight paper-dark" },
+  { key: "plain-midnight", label: "Plain Midnight", className: "paper-plain-midnight paper-dark" },
+  { key: "plain-charcoal", label: "Plain Charcoal", className: "paper-plain-charcoal paper-dark" },
+  { key: "plain-slate", label: "Plain Slate", className: "paper-plain-slate paper-dark" },
+  { key: "sand", label: "Sand", className: "paper-sand" },
+  { key: "linen", label: "Linen", className: "paper-linen" },
 ];
 
 export function backgroundClass(key) {

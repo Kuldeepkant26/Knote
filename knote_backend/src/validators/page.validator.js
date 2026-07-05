@@ -7,6 +7,7 @@ const createPageValidator = [
   body("notebook").isMongoId().withMessage("Invalid notebook id"),
   body("sectionId").isMongoId().withMessage("Invalid section id"),
   body("title").optional().trim().isLength({ max: 120 }).withMessage("Title is too long"),
+  body("background").optional().isIn(BACKGROUNDS).withMessage("Invalid background"),
 ];
 
 const updatePageValidator = [

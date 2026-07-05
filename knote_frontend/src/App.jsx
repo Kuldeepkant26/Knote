@@ -5,7 +5,7 @@ import { useAuthStore } from "@/stores/authStore";
 import Index from "@/routes/Index";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import PublicOnlyRoute from "@/routes/PublicOnlyRoute";
-import FullPageLoader from "@/components/ui/FullPageLoader";
+import { PageEditorSkeleton } from "@/components/dashboard/PageSkeletons";
 
 // The page editor (TipTap + Excalidraw) is heavy — load it only when opened.
 const PageEditor = lazy(() => import("@/pages/dashboard/PageEditor"));
@@ -60,7 +60,7 @@ export default function App() {
           <Route
             path="notebooks/:notebookId/pages/:pageId"
             element={
-              <Suspense fallback={<FullPageLoader />}>
+              <Suspense fallback={<PageEditorSkeleton />}>
                 <PageEditor />
               </Suspense>
             }

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Loader2, X, Check } from "lucide-react";
+import { useTheme } from "@/lib/theme";
 import "@excalidraw/excalidraw/index.css";
 
 // Lazy-load the heavy canvas so it's only fetched when a diagram is edited.
@@ -10,6 +11,7 @@ const Excalidraw = lazy(() =>
 export default function ExcalidrawModal({ open, initialScene, onSave, onClose }) {
   const apiRef = useRef(null);
   const [ready, setReady] = useState(false);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     if (!open) return;
@@ -70,6 +72,7 @@ export default function ExcalidrawModal({ open, initialScene, onSave, onClose })
               setReady(true);
             }}
             initialData={initialData}
+            theme={isDark ? "dark" : "light"}
           />
         </Suspense>
         {!ready && (

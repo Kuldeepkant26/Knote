@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Pencil, Lock } from "lucide-react";
 import { pageApi } from "@/services/pageApi";
 import { notebookApi } from "@/services/notebookApi";
 import PaperEditor from "@/components/editor/PaperEditor";
 import Toolbar from "@/components/editor/Toolbar";
 import SaveIndicator from "@/components/editor/SaveIndicator";
-import FullPageLoader from "@/components/ui/FullPageLoader";
+import ZoomControls, { clampZoom, ZOOM_STEP } from "@/components/editor/ZoomControls";
+import { PageEditorSkeleton } from "@/components/dashboard/PageSkeletons";
 import EmptyState from "@/components/dashboard/EmptyState";
 import { FileX } from "lucide-react";
 
@@ -21,6 +22,31 @@ export default function PageEditor() {
   const [notFound, setNotFound] = useState(false);
   const [saveStatus, setSaveStatus] = useState("saved"); // saved | saving | error
   const [title, setTitle] = useState("");
+  const [zoom, setZoom] = useState(1); // session-only, resets per page
+  const [editable, setEditable] = useState(true);
+
+  // Cmd/Ctrl +/-/0 zoom the page instead of the browser while editing.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key === "=" || e.key === "+") {
+        e.preventDefault();
+        setZoom((z) => clampZoom(z + ZOOM_STEP));
+      } else if (e.key === "-") {
+        e.preventDefault();
+        setZoom((z) => clampZoom(z - ZOOM_STEP));
+      } else if (e.key === "0") {
+        e.preventDefault();
+        setZoom(1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    setZoom(1);
+  }, [pageId]);
 
   // Fetch page + notebook (for the breadcrumb) whenever the route changes.
   useEffect(() => {
@@ -67,6 +93,8 @@ export default function PageEditor() {
   const handleBackgroundChange = (background) => {
     setPage((p) => ({ ...p, background }));
     persist({ background });
+    // Remember the choice so new pages start with the last-used background.
+    localStorage.setItem("knote-default-bg", background);
   };
 
   const handleTitleBlur = () => {
@@ -78,7 +106,7 @@ export default function PageEditor() {
     setTitle(trimmed);
   };
 
-  if (loading) return <FullPageLoader />;
+  if (loading) return <PageEditorSkeleton />;
   if (notFound) {
     return (
       <EmptyState
@@ -115,7 +143,24 @@ export default function PageEditor() {
             </>
           )}
         </nav>
-        <SaveIndicator status={saveStatus} />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setEditable((e) => !e)}
+            aria-label={editable ? "Lock editing" : "Enable editing"}
+            data-tip={editable ? "Lock editing" : "Enable editing"}
+            className={`tt flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition ${
+              editable
+                ? "border-mauve-100 bg-surface text-mauve-500 hover:text-mauve-800"
+                : "border-accent-300 bg-accent-50 text-accent-600"
+            }`}
+          >
+            {editable ? <Pencil size={14} /> : <Lock size={14} />}
+            {editable ? "Editing" : "Read-only"}
+          </button>
+          <ZoomControls zoom={zoom} onChange={setZoom} />
+          <SaveIndicator status={saveStatus} />
+        </div>
       </div>
 
       {/* Title */}
@@ -137,17 +182,22 @@ export default function PageEditor() {
       </div>
 
       {/* Toolbar (background picker lives inside it, always on the same row) */}
-      <div className="sticky top-0 z-20 mb-4 bg-cream-50/80 py-1 backdrop-blur">
+      <div
+        className={`sticky top-0 z-20 mb-4 bg-cream-50/80 py-1 backdrop-blur ${
+          editable ? "" : "pointer-events-none opacity-50"
+        }`}
+      >
         <Toolbar editor={editor} background={page.background} onBackgroundChange={handleBackgroundChange} />
       </div>
 
-      {/* Paper */}
-      <div className="flex-1 pb-10">
+      {/* Paper (CSS zoom participates in layout, unlike transform: scale) */}
+      <div className="flex-1 pb-10" style={{ zoom }}>
         <PaperEditor
           key={page._id}
           initialContent={page.content}
           background={page.background}
           font={page.defaultFont}
+          editable={editable}
           onSave={handleSaveContent}
           onEditorReady={setEditor}
         />

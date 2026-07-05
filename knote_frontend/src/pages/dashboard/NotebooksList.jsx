@@ -4,7 +4,7 @@ import { useNotebooksStore } from "@/stores/notebooksStore";
 import SectionHeader from "@/components/dashboard/SectionHeader";
 import NotebookCard from "@/components/dashboard/NotebookCard";
 import EmptyState from "@/components/dashboard/EmptyState";
-import FullPageLoader from "@/components/ui/FullPageLoader";
+import { NotebooksGridSkeleton } from "@/components/dashboard/PageSkeletons";
 import Button from "@/components/ui/Button";
 import NotebookFormModal from "@/components/dashboard/NotebookFormModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -37,7 +37,14 @@ export default function NotebooksList() {
     else await createNotebook(values);
   };
 
-  if (listLoading && !listLoaded) return <FullPageLoader />;
+  if (listLoading && !listLoaded) {
+    return (
+      <div>
+        <SectionHeader title="Your notebooks" subtitle="Organize notes by skill or subject" />
+        <NotebooksGridSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -11,6 +11,19 @@
       rel="stylesheet"
     />
     <title>KNOTE</title>
+    <script>
+      // Apply dark mode before the app bundle loads to avoid a light flash.
+      // Mirrors src/lib/theme.js: stored "light"/"dark" wins, else follow OS.
+      (function () {
+        try {
+          var pref = localStorage.getItem("knote-theme");
+          var dark =
+            pref === "dark" ||
+            (pref !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -4,11 +4,12 @@ import { ChevronRight, Plus, Info, NotebookPen } from "lucide-react";
 import { useNotebooksStore } from "@/stores/notebooksStore";
 import SectionColumn from "@/components/dashboard/SectionColumn";
 import EmptyState from "@/components/dashboard/EmptyState";
-import FullPageLoader from "@/components/ui/FullPageLoader";
+import { NotebookDetailSkeleton } from "@/components/dashboard/PageSkeletons";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import TextField from "@/components/ui/TextField";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { BACKGROUNDS } from "@/components/editor/editorConstants";
 
 export default function NotebookDetail() {
   const { id } = useParams();
@@ -64,7 +65,10 @@ export default function NotebookDetail() {
   const handleNewPage = async (sectionId) => {
     setCreatingPageFor(sectionId);
     try {
-      const page = await createPage({ notebook: id, sectionId, title: "Untitled page" });
+      // New pages start with the user's last-picked background.
+      const lastBg = localStorage.getItem("knote-default-bg");
+      const background = BACKGROUNDS.some((b) => b.key === lastBg) ? lastBg : undefined;
+      const page = await createPage({ notebook: id, sectionId, title: "Untitled page", background });
       navigate(`/dashboard/notebooks/${id}/pages/${page._id}`);
     } finally {
       setCreatingPageFor(null);
@@ -86,7 +90,7 @@ export default function NotebookDetail() {
     );
   }
 
-  if (currentLoading && !current) return <FullPageLoader />;
+  if (currentLoading && !current) return <NotebookDetailSkeleton />;
   if (!current) return null;
 
   const pageCount = current.pages?.length || 0;

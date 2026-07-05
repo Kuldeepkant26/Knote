@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { NotebookPen, PanelLeftClose, PanelLeftOpen, LogOut } from "lucide-react";
 import { navItems } from "@/lib/navItems";
 import { useUiStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 import Avatar from "@/components/ui/Avatar";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 export default function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
@@ -11,11 +13,7 @@ export default function Sidebar() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
-
-  const onLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   return (
     <aside
@@ -93,7 +91,7 @@ export default function Sidebar() {
           )}
         </div>
         <button
-          onClick={onLogout}
+          onClick={() => setConfirmLogout(true)}
           title={collapsed ? "Log out" : undefined}
           className={`mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-mauve-600 transition hover:bg-danger-50 hover:text-danger-600 ${
             collapsed ? "justify-center" : ""
@@ -103,6 +101,18 @@ export default function Sidebar() {
           {!collapsed && <span>Log out</span>}
         </button>
       </div>
+
+      <ConfirmDialog
+        open={confirmLogout}
+        onClose={() => setConfirmLogout(false)}
+        onConfirm={async () => {
+          await logout();
+          navigate("/login", { replace: true });
+        }}
+        title="Log out?"
+        message="You'll need to sign in again to access your notes."
+        confirmLabel="Log out"
+      />
     </aside>
   );
 }

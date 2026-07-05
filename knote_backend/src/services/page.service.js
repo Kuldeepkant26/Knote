@@ -9,7 +9,7 @@ async function getPage(userId, pageId) {
   return page;
 }
 
-async function createPage(userId, { notebook, sectionId, title }) {
+async function createPage(userId, { notebook, sectionId, title, background }) {
   // Verify the notebook belongs to the user and the section exists.
   const nb = await Notebook.findOne({ _id: notebook, user: userId });
   if (!nb) throw new ApiError(404, "Notebook not found");
@@ -22,6 +22,7 @@ async function createPage(userId, { notebook, sectionId, title }) {
     notebook,
     sectionId,
     title: title || "Untitled page",
+    ...(background ? { background } : {}),
     order: count,
   });
   return page.toObject();

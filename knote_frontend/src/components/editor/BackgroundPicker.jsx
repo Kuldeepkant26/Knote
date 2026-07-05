@@ -21,8 +21,8 @@ export default function BackgroundPicker({ value, onChange }) {
         <LayoutGrid size={17} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-64 rounded-xl border border-mauve-100 bg-surface p-3 shadow-pop">
-          <div className="grid grid-cols-3 gap-2">
+        <div className="absolute right-0 top-full z-30 mt-1 w-80 rounded-xl border border-mauve-100 bg-surface p-3 shadow-pop">
+          <div className="grid grid-cols-4 gap-2">
             {BACKGROUNDS.map((bg) => (
               <button
                 key={bg.key}
@@ -34,7 +34,7 @@ export default function BackgroundPicker({ value, onChange }) {
                   value === bg.key ? "ring-2 ring-accent-300" : ""
                 }`}
               >
-                <span className={`h-12 w-full rounded-md border border-mauve-100 ${bg.className}`} />
+                <span className={`paper-swatch h-12 w-full rounded-md border border-mauve-100 ${bg.className}`} />
                 <span className="text-[11px] text-mauve-500">{bg.label}</span>
                 {value === bg.key && (
                   <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent-500 text-white">

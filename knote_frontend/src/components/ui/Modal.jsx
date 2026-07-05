@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useClickOutside } from "@/hooks/useClickOutside";
 
@@ -15,7 +16,10 @@ export default function Modal({ open, onClose, title, children, className = "" }
 
   if (!open) return null;
 
-  return (
+  // Portal to <body>: ancestors with backdrop-filter/transform (e.g. the
+  // blurred Topbar) become the containing block for fixed positioning and
+  // would trap the dialog inside themselves.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-ink-900/30 backdrop-blur-sm" aria-hidden />
       <div
@@ -36,6 +40,7 @@ export default function Modal({ open, onClose, title, children, className = "" }
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

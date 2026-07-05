@@ -9,6 +9,13 @@ const BACKGROUNDS = [
   "dotted",
   "plain-cream",
   "plain-white",
+  "ruled-midnight",
+  "dotted-midnight",
+  "plain-midnight",
+  "plain-charcoal",
+  "plain-slate",
+  "sand",
+  "linen",
 ];
 
 const pageSchema = new mongoose.Schema(
