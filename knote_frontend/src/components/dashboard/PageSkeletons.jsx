@@ -62,6 +62,67 @@ export function NotebookDetailSkeleton() {
   );
 }
 
+export function FinanceSkeleton() {
+  return (
+    <div role="status" aria-label="Loading finance data">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="card p-5">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="mt-3 h-7 w-24" />
+            <Skeleton className="mt-2 h-3 w-14" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-3">
+          <Skeleton className="h-4 w-40" />
+          <div className="card space-y-3 p-5">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Skeleton key={i} className="h-8 w-full" />
+            ))}
+          </div>
+        </div>
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-40" />
+          <div className="card space-y-5 p-5">
+            {Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} className="h-6 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function TasksSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-3" role="status" aria-label="Loading tasks">
+      {Array.from({ length: 3 }, (_, i) => (
+        <div key={i} className="card space-y-3 p-6">
+          <Skeleton className="h-4 w-24" />
+          {Array.from({ length: 3 }, (_, j) => (
+            <Skeleton key={j} className="h-10 w-full rounded-xl" />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function CalendarSkeleton() {
+  return (
+    <div className="card overflow-hidden p-5" role="status" aria-label="Loading calendar">
+      <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: 35 }, (_, i) => (
+          <Skeleton key={i} className="h-21 w-full rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function PageEditorSkeleton() {
   return (
     <div className="flex h-full flex-col" role="status" aria-label="Loading page">
