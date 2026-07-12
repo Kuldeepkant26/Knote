@@ -13,6 +13,7 @@ const router = express.Router();
 router.use(protect); // all page routes require auth
 
 router.post("/", createPageValidator, validate, pageController.createPage);
+router.get("/recent", pageController.listRecentPages);
 router.get("/:id", pageIdValidator, validate, pageController.getPage);
 router.patch("/:id", updatePageValidator, validate, pageController.updatePage);
 router.delete("/:id", pageIdValidator, validate, pageController.deletePage);

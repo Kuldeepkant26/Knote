@@ -9,6 +9,25 @@ async function getPage(userId, pageId) {
   return page;
 }
 
+// Most recently updated pages across all of the user's notebooks, for the
+// dashboard's "Recent pages" rail.
+async function listRecentPages(userId, limit = 5) {
+  const pages = await Page.find({ user: userId })
+    .select("title notebook updatedAt")
+    .sort({ updatedAt: -1 })
+    .limit(limit)
+    .populate("notebook", "title")
+    .lean();
+
+  return pages.map((p) => ({
+    _id: p._id,
+    title: p.title,
+    notebook: p.notebook?._id,
+    notebookTitle: p.notebook?.title || "",
+    updatedAt: p.updatedAt,
+  }));
+}
+
 async function createPage(userId, { notebook, sectionId, title, background }) {
   // Verify the notebook belongs to the user and the section exists.
   const nb = await Notebook.findOne({ _id: notebook, user: userId });
@@ -53,4 +72,4 @@ async function deletePage(userId, pageId) {
   if (!page) throw new ApiError(404, "Page not found");
 }
 
-module.exports = { getPage, createPage, updatePage, deletePage };
+module.exports = { getPage, listRecentPages, createPage, updatePage, deletePage };
