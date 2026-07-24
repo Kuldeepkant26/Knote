@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, NotebookPen, Pencil, Trash2 } from "lucide-react";
+import { Plus, NotebookPen, Pencil } from "lucide-react";
 import { useNotebooksStore } from "@/stores/notebooksStore";
 import SectionHeader from "@/components/dashboard/SectionHeader";
 import NotebookCard from "@/components/dashboard/NotebookCard";
@@ -7,20 +7,19 @@ import EmptyState from "@/components/dashboard/EmptyState";
 import { NotebooksGridSkeleton } from "@/components/dashboard/PageSkeletons";
 import Button from "@/components/ui/Button";
 import NotebookFormModal from "@/components/dashboard/NotebookFormModal";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 export default function NotebooksList() {
-  const { notebooks, listLoaded, listLoading, fetchNotebooks, createNotebook, updateNotebook, deleteNotebook } =
+  const { notebooks, listLoaded, listLoading, fetchNotebooks, createNotebook, updateNotebook } =
     useNotebooksStore();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null); // notebook being renamed, or null for create
-  const [deleting, setDeleting] = useState(null);
   const [menuFor, setMenuFor] = useState(null);
 
+  // Cached list renders instantly; this revalidates it in the background.
   useEffect(() => {
-    if (!listLoaded) fetchNotebooks();
-  }, [listLoaded, fetchNotebooks]);
+    fetchNotebooks();
+  }, [fetchNotebooks]);
 
   const openCreate = () => {
     setEditing(null);
@@ -86,15 +85,6 @@ export default function NotebooksList() {
                     >
                       <Pencil size={15} /> Rename
                     </button>
-                    <button
-                      onClick={() => {
-                        setDeleting(nb);
-                        setMenuFor(null);
-                      }}
-                      className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-danger-600 transition hover:bg-danger-50"
-                    >
-                      <Trash2 size={15} /> Delete
-                    </button>
                   </div>
                 </>
               )}
@@ -120,15 +110,6 @@ export default function NotebooksList() {
         onClose={() => setFormOpen(false)}
         onSubmit={handleSubmit}
         notebook={editing}
-      />
-
-      <ConfirmDialog
-        open={!!deleting}
-        onClose={() => setDeleting(null)}
-        onConfirm={() => deleteNotebook(deleting._id)}
-        title="Delete notebook?"
-        message={`"${deleting?.title}" and all its pages will be permanently deleted.`}
-        confirmLabel="Delete notebook"
       />
     </div>
   );

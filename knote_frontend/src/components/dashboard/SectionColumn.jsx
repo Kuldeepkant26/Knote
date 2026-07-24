@@ -1,22 +1,8 @@
-import { useRef, useState } from "react";
-import { Plus, MoreVertical, Trash2, Loader2, FileText } from "lucide-react";
-import { useClickOutside } from "@/hooks/useClickOutside";
+import { Plus, Loader2, FileText } from "lucide-react";
 import PageCard from "./PageCard";
 
 // A Section rendered as a column; its Pages are the cards inside it.
-export default function SectionColumn({
-  section,
-  pages = [],
-  notebookId,
-  creatingPage,
-  onNewPage,
-  onDeleteSection,
-  onDeletePage,
-}) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-  useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
-
+export default function SectionColumn({ section, pages = [], notebookId, creatingPage, onNewPage }) {
   return (
     <div className="flex w-80 shrink-0 flex-col rounded-2xl bg-cream-100/70 p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -26,33 +12,11 @@ export default function SectionColumn({
             {pages.length}
           </span>
         </div>
-        <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setMenuOpen((o) => !o)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-mauve-400 transition hover:bg-mauve-100 hover:text-mauve-700"
-            aria-label="Section options"
-          >
-            <MoreVertical size={16} />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 top-8 z-30 w-36 overflow-hidden rounded-xl border border-mauve-100 bg-surface py-1 shadow-pop">
-              <button
-                onClick={() => {
-                  setMenuOpen(false);
-                  onDeleteSection?.();
-                }}
-                className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-danger-600 transition hover:bg-danger-50"
-              >
-                <Trash2 size={15} /> Delete
-              </button>
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="space-y-3">
         {pages.map((page) => (
-          <PageCard key={page._id} page={page} notebookId={notebookId} onDelete={onDeletePage} />
+          <PageCard key={page._id} page={page} notebookId={notebookId} />
         ))}
 
         {pages.length === 0 && (

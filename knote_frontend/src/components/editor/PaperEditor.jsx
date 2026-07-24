@@ -27,15 +27,18 @@ const extensions = [
 // Autosave debounce window.
 const AUTOSAVE_MS = 800;
 
-export default function PaperEditor({ initialContent, background, font, editable = true, onSave, onEditorReady }) {
+export default function PaperEditor({ initialContent, background, font, editable = true, onSave, onDirty, onEditorReady }) {
   const timerRef = useRef(null);
   const latestJsonRef = useRef(null);
+  const lastSavedRef = useRef(null); // stringified doc as last saved (or as loaded)
   const onSaveRef = useRef(onSave);
+  const onDirtyRef = useRef(onDirty);
 
-  // Keep the latest onSave without re-creating the editor.
+  // Keep the latest callbacks without re-creating the editor.
   useEffect(() => {
     onSaveRef.current = onSave;
-  }, [onSave]);
+    onDirtyRef.current = onDirty;
+  }, [onSave, onDirty]);
 
   const editor = useEditor({
     extensions,
@@ -44,11 +47,26 @@ export default function PaperEditor({ initialContent, background, font, editable
     editorProps: {
       attributes: { class: "tiptap" },
     },
+    onCreate: ({ editor }) => {
+      // Schema normalization can rewrite the doc at mount; treat that state as
+      // already saved so it never triggers a pointless autosave.
+      lastSavedRef.current = JSON.stringify(editor.getJSON());
+    },
     onUpdate: ({ editor }) => {
-      latestJsonRef.current = editor.getJSON();
+      const json = editor.getJSON();
+      if (JSON.stringify(json) === lastSavedRef.current) {
+        // No real change (normalization, or undo back to the saved state).
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = null;
+        latestJsonRef.current = null;
+        return;
+      }
+      onDirtyRef.current?.();
+      latestJsonRef.current = json;
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         timerRef.current = null;
+        lastSavedRef.current = JSON.stringify(latestJsonRef.current);
         onSaveRef.current?.(latestJsonRef.current);
       }, AUTOSAVE_MS);
     },

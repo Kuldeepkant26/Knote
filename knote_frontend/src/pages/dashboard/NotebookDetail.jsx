@@ -8,7 +8,6 @@ import { NotebookDetailSkeleton } from "@/components/dashboard/PageSkeletons";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import TextField from "@/components/ui/TextField";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { BACKGROUNDS } from "@/components/editor/editorConstants";
 
 export default function NotebookDetail() {
@@ -20,16 +19,13 @@ export default function NotebookDetail() {
     fetchNotebook,
     clearCurrent,
     addSection,
-    deleteSection,
     createPage,
-    deletePage,
   } = useNotebooksStore();
 
   const [notFound, setNotFound] = useState(false);
   const [sectionModalOpen, setSectionModalOpen] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
   const [savingSection, setSavingSection] = useState(false);
-  const [deletingSection, setDeletingSection] = useState(null);
   const [creatingPageFor, setCreatingPageFor] = useState(null);
 
   useEffect(() => {
@@ -137,8 +133,6 @@ export default function NotebookDetail() {
             notebookId={id}
             creatingPage={creatingPageFor === section._id}
             onNewPage={() => handleNewPage(section._id)}
-            onDeleteSection={() => setDeletingSection(section)}
-            onDeletePage={(pageId) => deletePage(pageId, id)}
           />
         ))}
 
@@ -172,16 +166,6 @@ export default function NotebookDetail() {
           </div>
         </form>
       </Modal>
-
-      {/* Delete section confirm */}
-      <ConfirmDialog
-        open={!!deletingSection}
-        onClose={() => setDeletingSection(null)}
-        onConfirm={() => deleteSection(id, deletingSection._id)}
-        title="Delete section?"
-        message={`"${deletingSection?.title}" and all its pages will be permanently deleted.`}
-        confirmLabel="Delete section"
-      />
     </div>
   );
 }

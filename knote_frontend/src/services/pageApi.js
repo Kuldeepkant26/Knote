@@ -5,5 +5,4 @@ export const pageApi = {
   recent: () => api.get("/pages/recent"), // { pages } across all notebooks
   create: (payload) => api.post("/pages", payload), // { page }
   update: (id, payload) => api.patch(`/pages/${id}`, payload), // autosave
-  remove: (id) => api.del(`/pages/${id}`),
 };

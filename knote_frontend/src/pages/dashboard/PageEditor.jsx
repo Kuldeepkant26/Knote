@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, ChevronLeft, Pencil, Lock } from "lucide-react";
 import { pageApi } from "@/services/pageApi";
-import { notebookApi } from "@/services/notebookApi";
+import { useNotebooksStore } from "@/stores/notebooksStore";
 import PaperEditor from "@/components/editor/PaperEditor";
 import Toolbar from "@/components/editor/Toolbar";
 import SaveIndicator from "@/components/editor/SaveIndicator";
@@ -48,23 +48,46 @@ export default function PageEditor() {
     setZoom(1);
   }, [pageId]);
 
-  // Fetch page + notebook (for the breadcrumb) whenever the route changes.
+  // Set once the user edits this page; blocks background revalidation from
+  // replacing the editor content underneath them.
+  const dirtyRef = useRef(false);
+
+  // Load page + notebook (for the breadcrumb) whenever the route changes.
+  // Cached copies render instantly; fresh data is fetched in the background.
   useEffect(() => {
     let cancelled = false;
+    dirtyRef.current = false;
+
+    const { pageCache, notebookCache, fetchPage, loadNotebook } = useNotebooksStore.getState();
+    const cachedPage = pageCache[pageId];
+    const cachedNotebook = notebookCache[notebookId];
+    const hasCache = !!(cachedPage && cachedNotebook);
+
     async function load() {
-      setLoading(true);
       setNotFound(false);
+      if (hasCache) {
+        setPage(cachedPage);
+        setTitle(cachedPage.title);
+        setNotebook(cachedNotebook);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+
       try {
-        const [{ page }, { notebook }] = await Promise.all([
-          pageApi.get(pageId),
-          notebookApi.get(notebookId),
+        const [freshPage, freshNotebook] = await Promise.all([
+          fetchPage(pageId),
+          loadNotebook(notebookId),
         ]);
         if (cancelled) return;
-        setPage(page);
-        setTitle(page.title);
-        setNotebook(notebook);
+        setNotebook(freshNotebook);
+        if (!dirtyRef.current) {
+          setPage(freshPage);
+          setTitle(freshPage.title);
+        }
+        setLoading(false);
       } catch {
-        if (!cancelled) setNotFound(true);
+        if (!cancelled && !hasCache) setNotFound(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -80,6 +103,7 @@ export default function PageEditor() {
       setSaveStatus("saving");
       try {
         await pageApi.update(pageId, patch);
+        useNotebooksStore.getState().updatePageCache(pageId, patch);
         setSaveStatus("saved");
       } catch {
         setSaveStatus("error");
@@ -90,7 +114,14 @@ export default function PageEditor() {
 
   const handleSaveContent = useCallback((content) => persist({ content }), [persist]);
 
+  // Fires on the first real keystroke (before the autosave debounce), so
+  // background revalidation can't replace content the user is editing.
+  const handleDirty = useCallback(() => {
+    dirtyRef.current = true;
+  }, []);
+
   const handleBackgroundChange = (background) => {
+    dirtyRef.current = true;
     setPage((p) => ({ ...p, background }));
     persist({ background });
     // Remember the choice so new pages start with the last-used background.
@@ -100,6 +131,7 @@ export default function PageEditor() {
   const handleTitleBlur = () => {
     const trimmed = title.trim() || "Untitled page";
     if (trimmed !== page.title) {
+      dirtyRef.current = true;
       setPage((p) => ({ ...p, title: trimmed }));
       persist({ title: trimmed });
     }
@@ -193,12 +225,13 @@ export default function PageEditor() {
       {/* Paper (CSS zoom participates in layout, unlike transform: scale) */}
       <div className="flex-1 pb-10" style={{ zoom }}>
         <PaperEditor
-          key={page._id}
+          key={`${page._id}:${page.updatedAt}`}
           initialContent={page.content}
           background={page.background}
           font={page.defaultFont}
           editable={editable}
           onSave={handleSaveContent}
+          onDirty={handleDirty}
           onEditorReady={setEditor}
         />
       </div>

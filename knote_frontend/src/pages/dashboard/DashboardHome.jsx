@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { NotebookPen, FileText, ListChecks, ArrowRight, Plus } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
@@ -9,30 +9,22 @@ import Card from "@/components/dashboard/Card";
 import EmptyState from "@/components/dashboard/EmptyState";
 import { useNotebooksStore } from "@/stores/notebooksStore";
 import { useTasksStore } from "@/stores/tasksStore";
-import { pageApi } from "@/services/pageApi";
 import { timeAgo } from "@/lib/timeAgo";
 
 export default function DashboardHome() {
-  const { notebooks, listLoaded, fetchNotebooks } = useNotebooksStore();
+  const { notebooks, listLoaded, fetchNotebooks, recentPages, recentPagesLoaded, fetchRecentPages } =
+    useNotebooksStore();
   const { tasks, listLoaded: tasksLoaded, fetchTasks } = useTasksStore();
 
-  const [recentPages, setRecentPages] = useState([]);
-  const [recentPagesLoaded, setRecentPagesLoaded] = useState(false);
-
+  // Cached data renders instantly; these revalidate in the background.
   useEffect(() => {
-    if (!listLoaded) fetchNotebooks();
-  }, [listLoaded, fetchNotebooks]);
+    fetchNotebooks();
+    fetchRecentPages();
+  }, [fetchNotebooks, fetchRecentPages]);
 
   useEffect(() => {
     if (!tasksLoaded) fetchTasks();
   }, [tasksLoaded, fetchTasks]);
-
-  useEffect(() => {
-    pageApi.recent().then(({ pages }) => {
-      setRecentPages(pages);
-      setRecentPagesLoaded(true);
-    });
-  }, []);
 
   const stats = useMemo(() => {
     const totalPages = notebooks.reduce((sum, nb) => sum + (nb.pageCount || 0), 0);
